@@ -290,30 +290,33 @@ early_stop_callback = EarlyStopping(
 
 checkpoint_callback = ModelCheckpoint(
     save_top_k=1,
-    # save_top_k=3,
     monitor="val_loss",
-    # dirpath='segFormerTst',
-    # filename='model.ckpt.index',
-    # mode='min'
-    )
+)
 
 
-max_epochs = 1
+max_epochs = 30
 trainer = pl.Trainer(
     max_epochs = max_epochs,
     accelerator="auto",
     devices="auto",
     callbacks=[early_stop_callback,checkpoint_callback]
 )
-# trainer.fit(segformer_finetuner)
+trainer.fit(segformer_finetuner)
+print(">>>>>>>>> training finished >>>>>>>>>>>")
+try:
+    segformer_finetuner.model.push_to_hub("doc2txt/segFormerTst")
+    print(">>>>>>>>> push_to_hub finished >>>>>>>>>>>")
+    
+except Exception as e:
+    print(e)
+    print(">>>>>>>>> push_to_hub FAILED!!!!! >>>>>>>>>>>")
+    
 
-# segformer_finetuner.model.push_to_hub("doc2txt/segFormerTst")
+# Commented out IPython magic to ensure Python compatibility.
+# %load_ext tensorboard
+# %tensorboard --logdir ./lightning_logs
 
-# # Commented out IPython magic to ensure Python compatibility.
-# # %load_ext tensorboard
-# # %tensorboard --logdir ./lightning_logs
-
-# res = trainer.test(ckpt_path="best")
+res = trainer.test(ckpt_path="best")
 
 color_map = {
     0:(0,0,0),
@@ -375,6 +378,7 @@ mask = mask.resize(input_image.size)
 mask = mask.convert("RGBA")
 input_image = input_image.convert("RGBA")
 overlay_img = Image.blend(input_image, mask, 0.5)
-
-cv2.imshow(overlay_img)
-cv2.waitKey()
+overlay_img.save("new_image.png")
+overlay_img.show()
+# cv2.imshow(overlay_img)
+# cv2.waitKey()

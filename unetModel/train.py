@@ -89,8 +89,18 @@ def main():
         VAL_MASK_DIR,
         BATCH_SIZE,
         train_transform,
-        val_transforms
+        val_transforms,
+        NUM_WORKERS,
+        PIN_MEMORY
     )
+    
+    scaler = torch.cuda.amp.grad_scaler()
+    for epoch in range(NUM_EPOCHS):
+        train_fn(train_loaders, model, optimizer, loss_fn, scaler)
+        # save model
+        # check accuracy
+        # print some example to folder
+    
 
 if __name__ == "__main__":
     main()

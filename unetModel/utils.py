@@ -4,7 +4,9 @@ import torch
 import torchvision
 from carvanaDataset import CarvanaDataset
 from torch.utils.data import DataLoader
-
+import os
+import torchvision.transforms.functional as TF
+from PIL import Image
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
@@ -80,3 +82,23 @@ def check_accuracy(loader, model, device="cuda"):
         print(f"Dice score: {dice_score/len(loader)}")
         
         model.train()
+
+
+def save_predictions_as_imgs(loader, model, folder="save_images/", device="cuda"):
+    model.eval()
+    
+    if not os.path.exists(folder):
+        os.makedirs(folder)
+    
+    with torch.no_grad():
+        for i, (x, y) in enumerate(loader):
+            x = x.to(device)
+            preds = torch.sigmoid(model(x))
+            preds = (preds > 0.5).float()
+            
+            for j in range(x.shape[0]):
+                image = TF.to_pil_image(x[j].cpu())
+                mask = TF.to_pil_image(preds[j].detach().cpu())
+                
+                image.save(os.path.join(folder, f"image_{i * loader.batch_size + j}.png"))
+                mask.save(os.path.join(folder, f"mask_{i * loader.batch_size + j}.png"))

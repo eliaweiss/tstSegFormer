@@ -3,3 +3,5 @@ lightning_logs/*
 ADE20k_toy_dataset/*
 logs/*
 results/*
+__MACOSX/dataset/*
+dataset/*

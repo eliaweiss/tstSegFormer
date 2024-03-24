@@ -81,7 +81,7 @@ def main():
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
     loss_fn = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
-    
+
     train_loaders, val_loaders = get_loaders(
         TRAIN_IMG_DIR,
         TRAIN_MASK_DIR,
@@ -93,27 +93,29 @@ def main():
         NUM_WORKERS,
         PIN_MEMORY
     )
-    
+
+    if LOAD_MODEL:
+        load_checkpoint(torch.load("my_checkpoint.pth.tar"), model)
+                        
     scaler = torch.cuda.amp.grad_scaler()
     for epoch in range(NUM_EPOCHS):
         train_fn(train_loaders, model, optimizer, loss_fn, scaler)
-        
+
         # save model
         check_point = {
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
         }
         save_checkpoint(check_point)
-        
+
         # check accuracy
         check_accuracy(val_loaders, model, device=DEVICE)
-        
+
         # print some example to folder
         save_predictions_as_imgs(
             val_loaders, model, folder="save_images/", device=DEVICE
         )
-            
-    
+
 
 if __name__ == "__main__":
     main()

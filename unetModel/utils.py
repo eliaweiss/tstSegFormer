@@ -8,6 +8,7 @@ import os
 import torchvision.transforms.functional as TF
 from PIL import Image
 
+
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):
     print("=> Saving checkpoint")
     torch.save(state, filename)
@@ -62,43 +63,42 @@ def check_accuracy(loader, model, device="cuda"):
     num_correct = 0
     num_pixels = 0
     model.eval()
-    
+
     with torch.no_grad():
-        for x,y in loader:
+        for x, y in loader:
             x = x.to(device)
             y = y.to(device).unsqueeze(1)
             preds = torch.sigmoid(model(x))
-            preds = (preds>0.5).float()
+            preds = (preds > 0.5).float()
             num_correct += (preds == y).sum()
             num_pixels += torch.numel(preds)
             dice_score += (2*(preds*y).sum())/(
                 (preds+y).sum() + 1e-8
             )
-            
+
         print(
             f"Got {num_correct}/{num_pixels} with acc {num_correct/num_pixels*100:.2f}"
         )
-        
+
         print(f"Dice score: {dice_score/len(loader)}")
-        
+
         model.train()
 
 
-def save_predictions_as_imgs(loader, model, folder="save_images/", device="cuda"):
+def save_predictions_as_imgs(
+    loader, model, folder="saved_images/", device="cuda"
+):
+
     model.eval()
-    
-    if not os.path.exists(folder):
-        os.makedirs(folder)
-    
-    with torch.no_grad():
-        for i, (x, y) in enumerate(loader):
-            x = x.to(device)
+    for idx, (x, y) in enumerate(loader):
+        x = x.to(device=device)
+        with torch.no_grad():
             preds = torch.sigmoid(model(x))
             preds = (preds > 0.5).float()
-            
-            for j in range(x.shape[0]):
-                image = TF.to_pil_image(x[j].cpu())
-                mask = TF.to_pil_image(preds[j].detach().cpu())
-                
-                image.save(os.path.join(folder, f"image_{i * loader.batch_size + j}.png"))
-                mask.save(os.path.join(folder, f"mask_{i * loader.batch_size + j}.png"))
+        torchvision.utils.save_image(
+            preds, f"{folder}/pred_{idx}.png"
+        )
+        torchvision.utils.save_image(y.unsqueeze(1), 
+                                    f"{folder}/correct_{idx}.png"
+                                     )
+    model.train()

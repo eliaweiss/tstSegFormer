@@ -13,23 +13,26 @@ from utils import (
     check_accuracy,
     save_predictions_as_imgs,
 )
-
+import os 
 BASE_PATH = "/home/ubuntu/work/carvana"
+
+CHECKPOINT_PATH = "model_cp/my_checkpoint.pth.tar"
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+print("DEVICE",DEVICE)
 BATCH_SIZE = 32
 NUM_EPOCHS = 3  # 100
 NUM_WORKERS = 2
 IMAGE_HEIGHT = 160  # 1280 original
 IMAGE_WIDTH = 240  # 1918 original
 PIN_MEMORY = True
-LOAD_MODEL = True
-TRAIN_IMG_DIR = f"{BASE_PATH}/data/train/"
-TRAIN_MASK_DIR = f"{BASE_PATH}/data/train_masks/"
-VAL_IMG_DIR = f"{BASE_PATH}/data/val/"
-VAL_MASK_DIR = f"{BASE_PATH}/data/val_masks/"
+LOAD_MODEL = False
+TRAIN_IMG_DIR = f"{BASE_PATH}/train/"
+TRAIN_MASK_DIR = f"{BASE_PATH}/train_masks/"
+VAL_IMG_DIR = f"{BASE_PATH}/val/"
+VAL_MASK_DIR = f"{BASE_PATH}/val_masks/"
 
 
 def train_fn(loader, model, optimizer, loss_fn, scaler):
@@ -96,8 +99,8 @@ def main():
         PIN_MEMORY
     )
 
-    if LOAD_MODEL:
-        load_checkpoint(torch.load("my_checkpoint.pth.tar"), model)
+    if LOAD_MODEL and os.path.exists(CHECKPOINT_PATH):
+        load_checkpoint(torch.load(CHECKPOINT_PATH), model)
     
     # check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
                         

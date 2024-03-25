@@ -103,7 +103,11 @@ def main():
         load_checkpoint(torch.load(CHECKPOINT_PATH), model)
     
     check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
-                        
+    # print some example to folder
+    # save_predictions_as_imgs(
+    #     val_loaders, model, folder="save_images/", device=DEVICE
+    # )
+    # exit()             
     scaler = torch.cuda.amp.grad_scaler.GradScaler()
     for epoch in range(NUM_EPOCHS):
         train_fn(train_loaders, model, optimizer, loss_fn, scaler)

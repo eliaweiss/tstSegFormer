@@ -12,7 +12,7 @@ val_mask_path = f"{BASE_PATH}/val_masks/"
 train_images = os.listdir(train_path)
 train_masks = os.listdir(train_mask_path)
 
-val_size = 100 #int(0.1 * len(train_images))  # 10% of the data for validation
+val_size = 10 #int(0.1 * len(train_images))  # 10% of the data for validation
 val_images = random.sample(train_images, val_size)
 # Match masks with corresponding images
 # val_masks = [mask for mask in train_masks if mask.split(".")[0] in [image.split(".")[0] for image in val_images]]  

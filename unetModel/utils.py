@@ -103,9 +103,9 @@ def save_predictions_as_imgs(
             preds = torch.sigmoid(model(x))
             preds = (preds > 0.5).float()
         torchvision.utils.save_image(
-            preds, os.path.join(folder,"/pred_{idx}.png")
+            preds, os.path.join(folder,f"pred_{idx}.png")
         )
         torchvision.utils.save_image(y.unsqueeze(1), 
-                                    os.path.join(folder,"/correct_{idx}.png")
+                                    os.path.join(folder,f"correct_{idx}.png")
                                      )
     model.train()

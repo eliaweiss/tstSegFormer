@@ -14,6 +14,8 @@ from utils import (
     save_predictions_as_imgs,
 )
 import os 
+import torch.nn as nn
+
 BASE_PATH = "/home/ubuntu/work/carvana"
 
 CHECKPOINT_PATH = "model_cp/my_checkpoint.pth.tar"

@@ -3,10 +3,10 @@ import random
 from shutil import move
 
 
-train_path = "/home/ubuntu/work/carvana/data/train/"  # Replace with your actual path
+train_path = "/home/ubuntu/work/carvana/data/train/"  
 train_mask_path = "/home/ubuntu/work/carvana/data/train_masks/"
-val_path = "/home/ubuntu/work/carvana/data/val/"  # Create this folder if it doesn't exist
-val_mask_path = "/home/ubuntu/work/carvana/data/val_masks/"  # Create this folder if it doesn't exist
+val_path = "/home/ubuntu/work/carvana/data/val/"  
+val_mask_path = "/home/ubuntu/work/carvana/data/val_masks/"  
 
 train_images = os.listdir(train_path)
 train_masks = os.listdir(train_mask_path)

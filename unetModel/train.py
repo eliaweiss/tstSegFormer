@@ -5,7 +5,7 @@ from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.nn as nn
 import torch.optim as optim
-from model import UNET
+from modelUnet import UNET
 from utils import (
     load_checkpoint,
     save_checkpoint,
@@ -13,6 +13,8 @@ from utils import (
     check_accuracy,
     save_predictions_as_imgs,
 )
+
+BASE_PATH = "/home/ubuntu/work/carvana"
 
 # Hyperparameters etc.
 LEARNING_RATE = 1e-4
@@ -24,10 +26,10 @@ IMAGE_HEIGHT = 160  # 1280 original
 IMAGE_WIDTH = 240  # 1918 original
 PIN_MEMORY = True
 LOAD_MODEL = False
-TRAIN_IMG_DIR = "data/train_images/"
-TRAIN_MASK_DIR = "data/train_masks/"
-VAL_IMG_DIR = "data/val_images/"
-VAL_MASK_DIR = "data/val_masks/"
+TRAIN_IMG_DIR = f"{BASE_PATH}/data/train/"
+TRAIN_MASK_DIR = f"{BASE_PATH}/data/train_masks/"
+VAL_IMG_DIR = f"{BASE_PATH}/data/val/"
+VAL_MASK_DIR = f"{BASE_PATH}/data/val_masks/"
 
 
 def train_fn(loader, model, optimizer, loss_fn, scaler):
@@ -99,7 +101,7 @@ def main():
     
     # check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
                         
-    scaler = torch.cuda.amp.grad_scaler()
+    scaler = torch.cuda.amp.grad_scaler.GradScaler()
     for epoch in range(NUM_EPOCHS):
         train_fn(train_loaders, model, optimizer, loss_fn, scaler)
 

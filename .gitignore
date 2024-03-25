@@ -6,3 +6,4 @@ results/*
 __MACOSX/dataset/*
 dataset/*
 */__pycache__/*
+*.pth.tar

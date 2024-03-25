@@ -7,3 +7,4 @@ __MACOSX/dataset/*
 dataset/*
 */__pycache__/*
 *.pth.tar
+save_images

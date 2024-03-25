@@ -28,7 +28,7 @@ NUM_WORKERS = 2
 IMAGE_HEIGHT = 160  # 1280 original
 IMAGE_WIDTH = 240  # 1918 original
 PIN_MEMORY = True
-LOAD_MODEL = False
+LOAD_MODEL = True
 TRAIN_IMG_DIR = f"{BASE_PATH}/train/"
 TRAIN_MASK_DIR = f"{BASE_PATH}/train_masks/"
 VAL_IMG_DIR = f"{BASE_PATH}/val/"
@@ -102,7 +102,7 @@ def main():
     if LOAD_MODEL and os.path.exists(CHECKPOINT_PATH):
         load_checkpoint(torch.load(CHECKPOINT_PATH), model)
     
-    # check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
+    check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
                         
     scaler = torch.cuda.amp.grad_scaler.GradScaler()
     for epoch in range(NUM_EPOCHS):
@@ -113,7 +113,7 @@ def main():
             "state_dict": model.state_dict(),
             "optimizer": optimizer.state_dict(),
         }
-        save_checkpoint(check_point)
+        save_checkpoint(check_point, CHECKPOINT_PATH)
 
         # check accuracy
         check_accuracy(val_loaders, model, device=DEVICE)

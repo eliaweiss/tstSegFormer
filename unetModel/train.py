@@ -30,7 +30,7 @@ NUM_WORKERS = 2
 IMAGE_HEIGHT = 160  # 1280 original
 IMAGE_WIDTH = 240  # 1918 original
 PIN_MEMORY = True
-LOAD_MODEL = False
+LOAD_MODEL = True
 TRAIN_IMG_DIR = f"{BASE_PATH}/train/"
 TRAIN_MASK_DIR = f"{BASE_PATH}/train_masks/"
 VAL_IMG_DIR = f"{BASE_PATH}/val/"
@@ -46,20 +46,19 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
         data = data.to(device=DEVICE)
         targets = targets.float().unsqueeze(1).to(device=DEVICE)
 
-    # forward
-    with torch.cuda.amp.autocast():
-        predictions = model(data)
-        loss = loss_fn(predictions, targets)
-    print("loss", loss.item())
+        # forward
+        with torch.cuda.amp.autocast():
+            predictions = model(data)
+            loss = loss_fn(predictions, targets)
 
-    # backward
-    optimizer.zero_grad()
-    scaler.scale(loss).backward()
-    scaler.step(optimizer)
-    scaler.update()
+        # backward
+        optimizer.zero_grad()
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
 
-    # update tqdm
-    loop.set_postfix(loss=loss.item())
+        # update tqdm
+        loop.set_postfix(loss=loss.item())
 
 
 def main():
@@ -108,8 +107,7 @@ def main():
 
     if LOAD_MODEL and os.path.exists(CHECKPOINT_PATH):
         load_checkpoint(torch.load(CHECKPOINT_PATH), model)
-    
-    check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
+        check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
 
     scaler = torch.cuda.amp.grad_scaler.GradScaler()
     for epoch in range(NUM_EPOCHS):

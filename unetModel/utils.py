@@ -1,5 +1,6 @@
 # utils.py
 
+import time
 import torch
 import torchvision
 from carvanaDataset import CarvanaDataset
@@ -75,7 +76,7 @@ def check_accuracy(loader, model, device="cuda"):
             
             acc = (preds == y).sum()
             numElem = torch.numel(preds)
-            print(idx, acc/numElem)
+            # print(idx, acc/numElem)
             
             num_correct += acc
             num_pixels += numElem
@@ -95,7 +96,8 @@ def check_accuracy(loader, model, device="cuda"):
 def save_predictions_as_imgs(
     loader, model, folder="saved_images/", device="cuda"
 ):
-
+    print("Saving predictions")
+    start = time.time()
     model.eval()
     for idx, (x, y) in enumerate(loader):
         x = x.to(device=device)
@@ -108,4 +110,5 @@ def save_predictions_as_imgs(
         torchvision.utils.save_image(y.unsqueeze(1), 
                                     os.path.join(folder,f"correct_{idx}.png")
                                      )
+    print(f"Saved predictions in {time.time()-start:.2f} seconds")
     model.train()

@@ -23,7 +23,7 @@ LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print("DEVICE",DEVICE)
 BATCH_SIZE = 32
-NUM_EPOCHS = 3  # 100
+NUM_EPOCHS = 100
 NUM_WORKERS = 2
 IMAGE_HEIGHT = 160  # 1280 original
 IMAGE_WIDTH = 240  # 1918 original
@@ -103,11 +103,7 @@ def main():
         load_checkpoint(torch.load(CHECKPOINT_PATH), model)
     
     check_accuracy(val_loaders, model, device=DEVICE) # change LOAD_MODEL to True
-    # print some example to folder
-    # save_predictions_as_imgs(
-    #     val_loaders, model, folder="save_images/", device=DEVICE
-    # )
-    # exit()             
+
     scaler = torch.cuda.amp.grad_scaler.GradScaler()
     for epoch in range(NUM_EPOCHS):
         train_fn(train_loaders, model, optimizer, loss_fn, scaler)

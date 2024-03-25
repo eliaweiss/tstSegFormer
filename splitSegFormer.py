@@ -13,10 +13,13 @@ test_path = f"{BASE_PATH}/test/"
 train_images = os.listdir(train_path)
 train_images = list(filter(lambda x: "jpg" in x, train_images))
 
-split_size = int(0.05 * len(train_images))  # % of the data for validation
+split_size = int(0.1 * len(train_images))  # % of the data for validation
+
+val_test_images = random.sample(train_images, split_size)
+val_images = val_test_images[:split_size//2]
+test_images = val_test_images[split_size//2:]
 
 ################################
-val_images = random.sample(train_images, split_size)
 # Match masks with corresponding images
 val_masks = []
 for image in val_images:
@@ -38,7 +41,6 @@ for image, mask in zip(val_images, val_masks):
 
 ################################
 
-test_images = random.sample(train_images, split_size)
 # Match masks with corresponding images
 test_masks = []
 for image in test_images:

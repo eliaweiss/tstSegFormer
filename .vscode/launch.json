@@ -12,6 +12,13 @@
             "console": "integratedTerminal"
         },
         {
+            "name": "train",
+            "type": "debugpy",
+            "request": "launch",
+            "program": "unetModel/train.py",
+            "console": "integratedTerminal"
+        },
+        {
             "name": "Python Debugger: Current File",
             "type": "debugpy",
             "request": "launch",

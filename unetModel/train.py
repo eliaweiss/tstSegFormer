@@ -5,7 +5,7 @@ from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.optim as optim
 from modelUnet import UNET
-from DiceLoss import DiceLoss
+# from DiceLoss import DiceLoss
 from utils import (
     load_checkpoint,
     save_checkpoint,
@@ -21,7 +21,7 @@ BASE_PATH = "/home/ubuntu/work/carvana"
 CHECKPOINT_PATH = "model_cp/my_checkpoint.pth.tar"
 
 # Hyperparameters etc.
-LEARNING_RATE = 1e-4
+LEARNING_RATE = 1e-5 #1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print("DEVICE",DEVICE)
 BATCH_SIZE = 32

@@ -3,9 +3,9 @@ import torch
 import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
-import torch.nn as nn
 import torch.optim as optim
 from modelUnet import UNET
+from DiceLoss import DiceLoss
 from utils import (
     load_checkpoint,
     save_checkpoint,
@@ -28,11 +28,14 @@ NUM_WORKERS = 2
 IMAGE_HEIGHT = 160  # 1280 original
 IMAGE_WIDTH = 240  # 1918 original
 PIN_MEMORY = True
-LOAD_MODEL = True
+LOAD_MODEL = False
 TRAIN_IMG_DIR = f"{BASE_PATH}/train/"
 TRAIN_MASK_DIR = f"{BASE_PATH}/train_masks/"
 VAL_IMG_DIR = f"{BASE_PATH}/val/"
 VAL_MASK_DIR = f"{BASE_PATH}/val_masks/"
+
+
+
 
 
 def train_fn(loader, model, optimizer, loss_fn, scaler):
@@ -45,6 +48,7 @@ def train_fn(loader, model, optimizer, loss_fn, scaler):
     with torch.cuda.amp.autocast():
         predictions = model(data)
         loss = loss_fn(predictions, targets)
+    print("loss", loss.item())
 
     # backward
     optimizer.zero_grad()
@@ -85,6 +89,7 @@ def main():
 
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
     loss_fn = nn.BCEWithLogitsLoss()
+    # loss_fn = DiceLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     train_loaders, val_loaders = get_loaders(

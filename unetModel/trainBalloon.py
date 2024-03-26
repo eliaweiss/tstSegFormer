@@ -15,6 +15,8 @@ from utils import (
 )
 import os
 import torch.nn as nn
+import pytorch_lightning as pl
+import torchvision
 
 BASE_PATH = "/Users/eliaweiss/work/tstSegFormer/Balloons-1"
 
@@ -34,25 +36,6 @@ LOAD_MODEL = False
 TRAIN_IMG_DIR = f"{BASE_PATH}/train/"
 VAL_IMG_DIR = f"{BASE_PATH}/valid/"
 
-def train_fn(loader, model, optimizer, loss_fn, scaler):
-    loop = tqdm(loader)
-    for batch_idx, (data, targets) in enumerate(loop):
-        data = data.to(device=DEVICE)
-        targets = targets.float().unsqueeze(1).to(device=DEVICE)
-
-        # forward
-        with torch.cuda.amp.autocast():
-            predictions = model(data)
-            loss = loss_fn(predictions, targets)
-
-        # backward
-        optimizer.zero_grad()
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
-
-        # update tqdm
-        loop.set_postfix(loss=loss.item())
 
 
 def main():
@@ -102,26 +85,20 @@ def main():
         # change LOAD_MODEL to True
         check_accuracy(val_loaders, model, device=DEVICE)
 
-    scaler = torch.cuda.amp.grad_scaler.GradScaler()
-    for epoch in range(NUM_EPOCHS):
-        print("epoch", epoch)
-        train_fn(train_loaders, model, optimizer, loss_fn, scaler)
-
-        # save model
-        check_point = {
-            "state_dict": model.state_dict(),
-            "optimizer": optimizer.state_dict(),
-        }
-        save_checkpoint(check_point, CHECKPOINT_PATH)
-
-        # check accuracy
-        check_accuracy(val_loaders, model, device=DEVICE)
-
-        # print some example to folder
-        save_predictions_as_imgs(
-            val_loaders, model, folder="save_images/", device=DEVICE
+    
+    trainer = pl.Trainer(
+        accelerator="auto", 
+        devices="auto",
+        max_epochs=NUM_EPOCHS,
+        # precision=16
         )
-
+    trainer.fit(model, train_loaders, val_loaders)
+    
+    trainer.validate(model, val_loaders)
+    # model.predict_step(
+    
+    # torchvision.utils.save_image(y.unsqueeze(1), 
+    #                                 os.path.join(folder,f"correct_{idx}.png")
 
 if __name__ == "__main__":
     main()

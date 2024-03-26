@@ -59,6 +59,7 @@ class UNET(pl.LightningModule):
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
         
         self.loss_fn = nn.BCEWithLogitsLoss()
+        # self.scaler = torch.cuda.amp.grad_scaler.GradScaler()
 
     ################################################################
     def forward(self, x):
@@ -109,11 +110,12 @@ class UNET(pl.LightningModule):
     def _common_step(self, batch, batch_idx):
         # Get data and targets
         data, targets = batch
+        targets = targets.float().unsqueeze(1)
 
         # Forward pass with AMP (assuming AMP is enabled)
-        with torch.cuda.amp.autocast():
-            predictions = self.forward(data)
-            loss = self.loss_fn(predictions, targets)
+        # with torch.cuda.amp.autocast():
+        predictions = self.forward(data)
+        loss = self.loss_fn(predictions, targets)
 
         # Automatic backward pass and optimizer step (handled by Lightning)
 
@@ -125,8 +127,8 @@ class UNET(pl.LightningModule):
     ################################################################
     def predict_step(self, batch):
         data, targets = batch
-        with torch.cuda.amp.autocast():
-            preds = torch.sigmoid(self.forward(batch))
+        # with torch.cuda.amp.autocast():
+        preds = torch.sigmoid(self.forward(data))
         
         preds = (preds > 0.5).float()
         

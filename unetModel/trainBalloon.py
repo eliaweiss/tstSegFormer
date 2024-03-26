@@ -4,9 +4,10 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.optim as optim
-from unetModel.unet_model import UNET
+from unet_model import UNET
 # from DiceLoss import DiceLoss
 from utils import (
+    get_loaders_balloon,
     load_checkpoint,
     save_checkpoint,
     get_loaders_carnava,
@@ -87,7 +88,7 @@ def main():
     # loss_fn = DiceLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-    train_loaders, val_loaders = get_loaders_carnava(
+    train_loaders, val_loaders = get_loaders_balloon(
         TRAIN_IMG_DIR,
         VAL_IMG_DIR,
         BATCH_SIZE,

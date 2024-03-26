@@ -4,7 +4,7 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.optim as optim
-from unetModel.unet_model import UNET
+from unet_model import UNET
 # from DiceLoss import DiceLoss
 from utils import (
     load_checkpoint,

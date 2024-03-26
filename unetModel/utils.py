@@ -31,7 +31,7 @@ def get_loaders_balloon(
     pin_memory=True,
 ):
     train_ds = BalloonDataset(
-        image_dir=train_dir,
+        root_dir=train_dir,
         transform=train_transform,
     )
 
@@ -44,7 +44,7 @@ def get_loaders_balloon(
     )
 
     val_ds = BalloonDataset(
-        image_dir=val_dir,
+        root_dir=val_dir,
         transform=val_transform,
     )
     val_loader = DataLoader(

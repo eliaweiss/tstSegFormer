@@ -22,7 +22,7 @@
             "name": "trainBalloon",
             "type": "debugpy",
             "request": "launch",
-            "program": "unetModel/trainBalloon.py",
+            "program": "trainBalloon.py",
             "console": "integratedTerminal"
         },
         {

@@ -3,13 +3,13 @@
 import time
 import torch
 import torchvision
-from carvanaDataset import CarvanaDataset
+from unetModel.carvanaDataset import CarvanaDataset
 from torch.utils.data import DataLoader
 import os
 import torchvision.transforms.functional as TF
 from PIL import Image
 
-from balloonDataset import BalloonDataset
+from unetModel.balloonDataset import BalloonDataset
 
 
 def save_checkpoint(state, filename="my_checkpoint.pth.tar"):

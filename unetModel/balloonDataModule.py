@@ -9,19 +9,17 @@ from unetModel.balloonDataset import BalloonDataset
 
 
 class BalloonDataModule (pl.LightningDataModule):
-    def _init__(self, data_dir, batch_size, num_workers, 
-                IMAGE_HEIGHT, 
-                IMAGE_WIDTH,
-                BATCH_SIZE,
-                NUM_WORKERS,
-                PIN_MEMORY
-                
+    def __init__(self,
+                data_dir,
+                batch_size=32,
+                num_workers=2,
+                image_height=512,
+                image_width=512,
+                pin_memory=True,
                 ):
-        self.IMAGE_HEIGHT = IMAGE_HEIGHT 
-        self.IMAGE_WIDTH = IMAGE_WIDTH
-        self.BATCH_SIZE = BATCH_SIZE
-        self.NUM_WORKERS = NUM_WORKERS
-        self.PIN_MEMORY = PIN_MEMORY        
+        self.image_height = image_height
+        self.image_width = image_width
+        self.pin_memory = pin_memory
         self.data_dir = data_dir
         self.batch_size = batch_size
         self.num_workers = num_workers
@@ -31,7 +29,7 @@ class BalloonDataModule (pl.LightningDataModule):
 
         self.train_transform = A.Compose(
             [
-                A. Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
+                A. Resize(height=image_height, width=image_width),
                 A. Rotate(limit=35, p=1.0),
                 A.HorizontalFlip(p=0.5),
                 A.VerticalFlip(p=0.1),
@@ -45,7 +43,7 @@ class BalloonDataModule (pl.LightningDataModule):
         )
         self.val_transform = A.Compose(
             [
-                A.Resize(height=IMAGE_HEIGHT, width=IMAGE_WIDTH),
+                A.Resize(height=image_height, width=image_width),
                 A.Normalize(
                     mean=[0.0, 0.0, 0.0],
                     std=[1.0, 1.0, 1.0],
@@ -74,21 +72,21 @@ class BalloonDataModule (pl.LightningDataModule):
     def train_dataloader(self):
         self.train_loaders = DataLoader(
             self.train_ds,
-            batch_size=self.BATCH_SIZE,
-            num_workers=self.NUM_WORKERS,
-            pin_memory=self.PIN_MEMORY,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
             shuffle=True,
         )
         return self.train_loaders
 
-    def val_dataloader(self): 
+    def val_dataloader(self):
         self.val_loaders = DataLoader(
             self.val_ds,
-            batch_size=self.BATCH_SIZE,
-            num_workers=self.NUM_WORKERS,
-            pin_memory=self.PIN_MEMORY,
+            batch_size=self.batch_size,
+            num_workers=self.num_workers,
+            pin_memory=self.pin_memory,
             shuffle=False,
         )
-        return self.val_loaders      
-      
+        return self.val_loaders
+
     def test_dataloader(self): pass

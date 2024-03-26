@@ -8,11 +8,34 @@ from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 import torch.optim as optim
 # import torchmetrics
-# from torchmetrics import Metric
 from torchmetrics.classification import Accuracy
 LEARNING_RATE = 1e-4
+from torchmetrics import Metric
 
+class MyAccuracy(Metric):
+    def __init__(self):
+        super().__init__()
+        self.add_state("total", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("correct", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        self.add_state("dice_score", default=torch.tensor(0, dtype=torch.float), dist_reduce_fx="sum")
+        
+    def update(self,preds, targets):
+        preds = (preds > 0.5).float()
+        
+        
+        self.correct +=  (preds == targets).sum()
+        self.total += torch.numel(preds)
+        self.dice_score += (2*(preds*targets).sum())/(
+            (preds+targets).sum() + 1e-8
+        )        
+        
 
+    def compute(self):
+        # Calculate accuracy and dice coefficient
+        accuracy = self.correct.float() / self.total.float()
+        dice_score = self.dice_score.float()
+        return {'accuracy': accuracy, 'dice_score': dice_score}
+            
 class DoubleConv(nn.Module):
     ################################################################
     def __init__(self, in_channels, out_channels):
@@ -37,14 +60,16 @@ class UNET(pl.LightningModule):
     ################################################################
     def __init__(self,
                  in_channels=3, out_channels=1,
-                 features=[64, 128, 256, 512]
+                 features=[64, 128, 256, 512],
+                 metrics_interval=100
                  ):
         super(UNET, self).__init__()
         self._init_unet(in_channels, out_channels, features)
         
         self.loss_fn = nn.BCEWithLogitsLoss()
         self.accuracy = Accuracy(task="multiclass", num_classes=2)
-
+        self.my_accuracy = MyAccuracy()
+        self.metrics_interval = metrics_interval
     ################################################################
 
     def _init_unet(self, in_channels, out_channels, features):
@@ -100,16 +125,33 @@ class UNET(pl.LightningModule):
     def training_step(self, batch, batch_idx):
         loss , predictions, targets = self._common_step(batch, batch_idx)
         # self.log('train_loss', loss)
-        self.log_dict({'train_loss': loss}, prog_bar=True)
-        return loss
+        if True: #batch_idx % self.metrics_interval == 0:
+            accuracy = self.my_accuracy(predictions, targets)
+            
+            # metrics = self.train_mean_iou.compute(
+            #     num_labels=self.num_classes,
+            #     ignore_index=255,
+            #     reduce_labels=False,
+            # )
 
+            metrics = {'loss': loss, "accuracy": accuracy["accuracy"], "dice_score": accuracy["dice_score"]}
+
+            # for k,v in metrics.items():
+            #     self.log(k,v)
+
+        else:
+            metrics = {'loss': loss}
+        
+        self.log_dict(metrics, prog_bar=True)
+        
+
+        return(metrics)
     
     ################################################################
     def validation_step(self, batch, batch_idx):
         loss , predictions, targets = self._common_step(batch, batch_idx)
         # self.log('val_loss', loss)
-        accuracy = self.accuracy(predictions, targets)
-        self.log_dict({'val_loss': loss, 'accuracy': accuracy})        
+        # self.log_dict({'val_loss': loss, 'accuracy': accuracy})        
         return loss
     
     ################################################################

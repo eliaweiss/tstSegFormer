@@ -6,9 +6,12 @@ import pytorch_lightning as pl
 from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
+import torch.optim as optim
+LEARNING_RATE = 1e-4
+
 
 class DoubleConv(pl.LightningModule):
-    def __init__(self, in_channels, out_channels) -> None:
+    def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
             # kernel, stride, padding - same convolution
@@ -29,7 +32,7 @@ class UNET(pl.LightningModule):
     def __init__(self,
                  in_channels=3, out_channels=1,
                  features=[64, 128, 256, 512]
-                 ) -> None:
+                 ):
         super(UNET, self).__init__()
         self.downs = nn.ModuleList()
         self.ups = nn.ModuleList()
@@ -51,6 +54,8 @@ class UNET(pl.LightningModule):
         self.bottleneck = DoubleConv(features[-1], features[-1]*2)
 
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+        
+        self.loss_fn = nn.BCEWithLogitsLoss()
 
     def forward(self, x):
         skip_connections = []
@@ -74,8 +79,38 @@ class UNET(pl.LightningModule):
             x = self.ups[idx+1](concat_skip)
 
         return self.final_conv(x)
+    
+    def training_step(self, batch, batch_idx):
+        loss , predictions, targets = self._common_step(batch, batch_idx)
+        return loss
 
+    
+    def validation_step(self, batch, batch_idx):
+        loss , predictions, targets = self._common_step(batch, batch_idx)
+        return loss
+    
+    def test_step(self, batch, batch_idx):
+        loss , predictions, targets = self._common_step(batch, batch_idx)
+        return loss
+    
+    def _common_step(self, batch, batch_idx):
+        # Get data and targets
+        data, targets = batch
 
+        # Forward pass with AMP (assuming AMP is enabled)
+        with torch.cuda.amp.autocast():
+            predictions = self(data)
+            loss = self.loss_fn(predictions, targets)
+
+        # Automatic backward pass and optimizer step (handled by Lightning)
+
+        # Automatic logging (can be configured in trainer)
+
+        return loss , predictions, targets   
+    
+    def configure_optimizers(self):
+        return optim.Adam(self.parameters(), lr=LEARNING_RATE)
+        
 def test():
     x = torch.randn((3, 1, 161, 161))
     model = UNET(in_channels=1, out_channels=1)

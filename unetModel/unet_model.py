@@ -7,6 +7,9 @@ from pytorch_lightning.callbacks.early_stopping import EarlyStopping
 from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
 from pytorch_lightning.loggers import CSVLogger
 import torch.optim as optim
+# import torchmetrics
+# from torchmetrics import Metric
+from torchmetrics.classification import Accuracy
 LEARNING_RATE = 1e-4
 
 
@@ -37,6 +40,14 @@ class UNET(pl.LightningModule):
                  features=[64, 128, 256, 512]
                  ):
         super(UNET, self).__init__()
+        self._init_unet(in_channels, out_channels, features)
+        
+        self.loss_fn = nn.BCEWithLogitsLoss()
+        self.accuracy = Accuracy(task="multiclass", num_classes=2)
+
+    ################################################################
+
+    def _init_unet(self, in_channels, out_channels, features):
         self.downs = nn.ModuleList()
         self.ups = nn.ModuleList()
 
@@ -57,8 +68,8 @@ class UNET(pl.LightningModule):
         self.bottleneck = DoubleConv(features[-1], features[-1]*2)
 
         self.final_conv = nn.Conv2d(features[0], out_channels, kernel_size=1)
+        return in_channels
         
-        self.loss_fn = nn.BCEWithLogitsLoss()
         # self.scaler = torch.cuda.amp.grad_scaler.GradScaler()
 
     ################################################################
@@ -88,15 +99,17 @@ class UNET(pl.LightningModule):
     ################################################################
     def training_step(self, batch, batch_idx):
         loss , predictions, targets = self._common_step(batch, batch_idx)
-        self.log('train_loss', loss)
+        # self.log('train_loss', loss)
+        self.log_dict({'train_loss': loss}, prog_bar=True)
         return loss
 
     
     ################################################################
     def validation_step(self, batch, batch_idx):
         loss , predictions, targets = self._common_step(batch, batch_idx)
-        self.log('val_loss', loss)
-        
+        # self.log('val_loss', loss)
+        accuracy = self.accuracy(predictions, targets)
+        self.log_dict({'val_loss': loss, 'accuracy': accuracy})        
         return loss
     
     ################################################################

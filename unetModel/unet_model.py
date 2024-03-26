@@ -11,6 +11,7 @@ LEARNING_RATE = 1e-4
 
 
 class DoubleConv(nn.Module):
+    ################################################################
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
@@ -24,11 +25,13 @@ class DoubleConv(nn.Module):
             nn.ReLU(inplace=True),
         )
 
+    ################################################################
     def forward(self, x):
         return self.conv(x)
 
 
 class UNET(pl.LightningModule):
+    ################################################################
     def __init__(self,
                  in_channels=3, out_channels=1,
                  features=[64, 128, 256, 512]
@@ -57,6 +60,7 @@ class UNET(pl.LightningModule):
         
         self.loss_fn = nn.BCEWithLogitsLoss()
 
+    ################################################################
     def forward(self, x):
         skip_connections = []
         for down in self.downs:
@@ -80,37 +84,60 @@ class UNET(pl.LightningModule):
 
         return self.final_conv(x)
     
+    ################################################################
     def training_step(self, batch, batch_idx):
         loss , predictions, targets = self._common_step(batch, batch_idx)
+        self.log('train_loss', loss)
         return loss
 
     
+    ################################################################
     def validation_step(self, batch, batch_idx):
         loss , predictions, targets = self._common_step(batch, batch_idx)
+        self.log('val_loss', loss)
+        
         return loss
     
+    ################################################################
     def test_step(self, batch, batch_idx):
         loss , predictions, targets = self._common_step(batch, batch_idx)
+        self.log('test_loss', loss)
+        
         return loss
     
+    ################################################################
     def _common_step(self, batch, batch_idx):
         # Get data and targets
         data, targets = batch
 
         # Forward pass with AMP (assuming AMP is enabled)
         with torch.cuda.amp.autocast():
-            predictions = self(data)
+            predictions = self.forward(data)
             loss = self.loss_fn(predictions, targets)
 
         # Automatic backward pass and optimizer step (handled by Lightning)
 
         # Automatic logging (can be configured in trainer)
-
+ 
         return loss , predictions, targets   
+
     
+    ################################################################
+    def predict_step(self, batch):
+        data, targets = batch
+        with torch.cuda.amp.autocast():
+            preds = torch.sigmoid(self.forward(batch))
+        
+        preds = (preds > 0.5).float()
+        
+        return preds
+        
+    
+    ################################################################
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=LEARNING_RATE)
-        
+            
+################################################################
 def test():
     x = torch.randn((3, 1, 161, 161))
     model = UNET(in_channels=1, out_channels=1)

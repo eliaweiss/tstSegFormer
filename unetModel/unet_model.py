@@ -10,7 +10,7 @@ import torch.optim as optim
 LEARNING_RATE = 1e-4
 
 
-class DoubleConv(pl.LightningModule):
+class DoubleConv(nn.Module):
     def __init__(self, in_channels, out_channels):
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(

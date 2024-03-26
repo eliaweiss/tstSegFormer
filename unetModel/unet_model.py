@@ -2,9 +2,12 @@
 import torch
 import torch.nn as nn
 import torchvision.transforms.functional as TF
+import pytorch_lightning as pl
+from pytorch_lightning.callbacks.early_stopping import EarlyStopping
+from pytorch_lightning.callbacks.model_checkpoint import ModelCheckpoint
+from pytorch_lightning.loggers import CSVLogger
 
-
-class DoubleConv(nn.Module):
+class DoubleConv(pl.LightningModule):
     def __init__(self, in_channels, out_channels) -> None:
         super(DoubleConv, self).__init__()
         self.conv = nn.Sequential(
@@ -22,7 +25,7 @@ class DoubleConv(nn.Module):
         return self.conv(x)
 
 
-class UNET(nn.Module):
+class UNET(pl.LightningModule):
     def __init__(self,
                  in_channels=3, out_channels=1,
                  features=[64, 128, 256, 512]

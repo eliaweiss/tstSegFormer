@@ -10,7 +10,6 @@ from utils import (
     get_loaders_balloon,
     load_checkpoint,
     save_checkpoint,
-    get_loaders_carnava,
     check_accuracy,
     save_predictions_as_imgs,
 )

@@ -66,9 +66,6 @@ def main():
     )
 
     model = UNET(in_channels=3, out_channels=1).to(DEVICE)
-    loss_fn = nn.BCEWithLogitsLoss()
-    # loss_fn = DiceLoss()
-    optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
     train_loaders, val_loaders = get_loaders_balloon(
         TRAIN_IMG_DIR,

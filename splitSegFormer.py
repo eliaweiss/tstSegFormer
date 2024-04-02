@@ -4,12 +4,13 @@ from shutil import move
 import glob
 from os.path import join, isfile, splitext
 
-BASE_PATH = "/home/ubuntu/work/carvana/segFormer"
+BASE_PATH = "/home/ubuntu/work/pdfBLines/dataset"
 
 train_path = f"{BASE_PATH}/train/"
 val_path = f"{BASE_PATH}/valid/"
 test_path = f"{BASE_PATH}/test/"
-
+os.makedirs(os.path.dirname(val_path), exist_ok=True)
+os.makedirs(os.path.dirname(test_path), exist_ok=True)
 train_images = os.listdir(train_path)
 train_images = list(filter(lambda x: "jpg" in x, train_images))
 
@@ -26,7 +27,7 @@ for image in val_images:
     # Extract mask base name
     mask_base_name = image.split(".")[0]
     # Loop through validation images to find match
-    val_masks.append(f"{mask_base_name}_mask.gif")
+    val_masks.append(f"{mask_base_name}_mask.png")
     
 val_masks.sort()
 val_images.sort()
@@ -47,7 +48,7 @@ for image in test_images:
     # Extract mask base name
     mask_base_name = image.split(".")[0]
     # Loop through testidation images to find match
-    test_masks.append(f"{mask_base_name}_mask.gif")
+    test_masks.append(f"{mask_base_name}_mask.png")
     
 test_masks.sort()
 test_images.sort()

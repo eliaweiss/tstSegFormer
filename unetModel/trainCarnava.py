@@ -4,12 +4,12 @@ import albumentations as A
 from albumentations.pytorch import ToTensorV2
 from tqdm import tqdm
 import torch.optim as optim
-from modelUnet import UNET
+from unet_model import UNET
 # from DiceLoss import DiceLoss
 from utils import (
     load_checkpoint,
     save_checkpoint,
-    get_loaders,
+    get_loaders_carnava,
     check_accuracy,
     save_predictions_as_imgs,
 )
@@ -21,7 +21,7 @@ BASE_PATH = "/home/ubuntu/work/carvana"
 CHECKPOINT_PATH = "model_cp/my_checkpoint.pth.tar"
 
 # Hyperparameters etc.
-LEARNING_RATE = 1e-5  # 1e-4
+LEARNING_RATE = 1e-4
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 print("DEVICE", DEVICE)
 BATCH_SIZE = 32
@@ -90,7 +90,7 @@ def main():
     # loss_fn = DiceLoss()
     optimizer = optim.Adam(model.parameters(), lr=LEARNING_RATE)
 
-    train_loaders, val_loaders = get_loaders(
+    train_loaders, val_loaders = get_loaders_carnava(
         TRAIN_IMG_DIR,
         TRAIN_MASK_DIR,
         VAL_IMG_DIR,
